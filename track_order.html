@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="navbar.css">
+  </head>
+
+  <body>
+    <ul class="topnav">
+        <li><a href="index.html">Home</a></li>
+        <li><a class="active" href="track_order.html">Track Order</a></li>
+        <li><a id="basket-link" href="delivery_information.html">Basket (<span id="basket-count">0</span>)</a></li>
+        <li class="right"><a  href="login.html">Login</a></li>
+      </ul>
+
+      <h1>My Orders</h1>
+
+      <div id="orders">
+        <br />
+      </div>
+
+
+    <script src="configuration.js"></script>
+    <script>
+        var host = getHost();
+        var logged_in = localStorage.getItem('token');
+        var basket = localStorage.getItem('basket');
+        if(logged_in == null) {
+            window.location.assign("login.html");
+        }
+        
+
+        updateBasket();
+
+
+        async function updateBasket() {
+        var basket = localStorage.getItem('basket');
+        var basket_div = document.getElementById("basket-count");
+        console.log(basket);
+        basket_div.innerHTML = 0;
+        if (basket == null) return;
+        console.log(basket);
+
+        var response = await fetch(host + "/flowers/" + basket);
+
+        if (response.status == 200) {
+            console.log(response);
+        basket_div.innerHTML = 1;
+
+        }
+        }
+
+
+        
+
+        onload();
+
+        async function onload() {
+            var email = localStorage.getItem('email');
+            var orders_div = document.getElementById("orders");
+
+            let request = {
+                    method: "GET",
+                    headers: {
+                    },
+                }
+
+            var response = await fetch(host + "/orders/" + email, request);
+
+            var orders = response.json().then( result =>{
+                console.log(result);
+            console.log(result);
+            console.log(result.length);
+
+
+            for (order of result) {
+                orders_div.innerHTML += 
+                `
+            <br />
+            <div><h2>${order.flower_id}</h2>
+            <p>$${order.price}, Ordered for ${order.first_name} ${order.last_name}</p>
+            <p>Scheduled for ${order.delivery_date}, Status of: ${order.status}</p>
+            </div>`;
+            }
+
+
+            if (result.length == 0){
+                    orders_div.innerHTML += "No orders found."
+
+
+            }
+          });
+
+        }
+    </script>
+   
+  </body>
+</html>

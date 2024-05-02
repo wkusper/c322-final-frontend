@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="index.css">
+  </head>
+
+  <body>
+    <ul class="topnav">
+        <li><a  href="index.html" class="active">Home</a></li>
+        <li><a href="track_order.html">Track Order</a></li>
+        <li><a id="basket-link" href="delivery_information.html">Basket (<span id="basket-count">0</span>)</a></li>
+        <li class="right"><a  href="login.html">Login</a></li>
+      </ul>
+
+      <h1>Send Blooms!</h1>
+
+
+      <div class="filter">
+        <label>Filter </label>
+      <select onchange="reload_search()" id="type" name="type">
+        <option value="">Any Types</option>
+        <option value="MIXED">Mixed</option>
+        <option value="ROSES">Roses</option>
+        <option value="LILIES">Lilies</option>
+        <option value="TULIPS">Tulips</option>
+        <option value="DASIES">Dasies</option>
+      </select>
+      <select onchange="reload_search()" id="color" name="color">
+        <option value="">Any Colors</option>
+        <option value="MIXED">Mixed</option>
+        <option value="RED">Red</option>
+        <option value="YELLOW">Yellow</option>
+        <option value="GREEN">Green</option>
+        <option value="ORANGE">Orange</option>
+      </select>
+      <select onchange="reload_search()" id="occasion" name="occasion">
+        <option value="">Any Occasion</option>
+        <option value="MOTHERS_DAY">Mother's Day</option>
+        <option value="BIRTHDAY">Birthday</option>
+        <option value="THANKS">Thanks</option>
+      </select>
+    </div>
+
+      <div class="sort">
+        <label>Sort </label>
+
+        <select onchange="resort()" id="sort" name="sort">
+          <option value="backward">Price: High to Low</option>
+          <option value="">Price: Low to High</option>
+        </select>
+      </div>
+      <div id="flowers">
+
+      </div>
+
+
+      <script src="configuration.js"></script>
+      <script>
+          var host = getHost();
+          var logged_in = localStorage.getItem('token');
+          var email = localStorage.getItem('email');
+
+          var color = "ALL";
+          var occasion = "ALL";
+          var all_flowers = []
+
+          updateBasket()
+          
+          async function updateBasket() {
+            var basket = localStorage.getItem('basket');
+            var basket_div = document.getElementById("basket-count");
+            console.log(basket);
+            basket_div.innerHTML = 0;
+            if (basket == null) return;
+            console.log(basket);
+
+            var response = await fetch(host + "/flowers/" + basket);
+
+            if (response.status == 200) {
+                console.log(response);
+            basket_div.innerHTML = 1;
+
+            }
+          }
+  
+          
+  
+          onload();
+  
+          async function onload() {
+            var email = localStorage.getItem('email');
+            var orders_div = document.getElementById("flowers");
+
+            let request = {
+                    method: "GET",
+                    headers: {
+                      "Authorization": `Bearer ${logged_in}`,
+                        "Access-Control-Allow-Origin": host
+                    },
+                }
+
+            var response = await fetch(host + "/flowers");
+
+            var flowers = response.json().then( result =>{
+                console.log(result);
+                all_flowers = result;
+
+                for (flower of result) {
+                console.log(flower);
+                    orders_div.innerHTML += 
+                    `
+                <a href="./add_basket.html?flower=${flower.id}?price=${flower.price}">
+                    <div class="flip-card flower">
+                        <img src="${host}/flowers/image/${flower.id}"> </img>
+                        <h2>${flower.id}</h2>
+                    <p>$${flower.price}</p>
+                    </div>
+                </a>`;
+                }
+
+
+                if (flowers.length == 0){
+                        orders_div.innerHTML += "No flowers found."
+
+
+                }
+            }
+        );
+
+
+          }
+
+          function reload_search() {
+
+            var type = document.getElementById("type").value;
+            var color = document.getElementById("color").value;
+            var occasion = document.getElementById("occasion").value;
+            var sort = document.getElementById("sort").value;
+
+            console.log(all_flowers);
+            
+
+            var these_flowers = [];
+
+            var orders_div = document.getElementById("flowers");
+            orders_div.innerHTML = "";
+
+
+            for (flower of all_flowers) {
+              if (type === "" || type == flower.type){
+                if (color === "" || color == flower.color) {
+                  if (occasion === "" || occasion == flower.occasion) {
+                    these_flowers.push(flower);
+                    console.log('yes');
+                  }
+                }
+              }
+              console.log(flower);
+              console.log(these_flowers);
+            }
+
+
+
+            for (flower of these_flowers) {
+                console.log(flower);
+                    orders_div.innerHTML += 
+                    `
+                <a href="./add_basket.html?flower=${flower.id}?price=${flower.price}">
+                    <div class="flip-card flower">
+                        <img src="${host}/flowers/image/${flower.id}"> </img>
+                        <h2>${flower.id}</h2>
+                    <p>$${flower.price}</p>
+                    </div>
+                </a>`;
+                }
+
+          }
+
+          function resort() {
+
+            if (sort === "backwards") {
+              return
+
+            } else {
+              all_flowers.reverse();
+
+            }
+            reload_search();
+
+          }
+      </script>
+     
+   
+  </body>
+</html>

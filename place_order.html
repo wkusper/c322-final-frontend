@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="basket.css">
+  </head>
+
+  <body>
+    <ul class="topnav">
+        <li><a  href="index.html">Home</a></li>
+        <li><a href="track_order.html">Track Order</a></li>
+        <li><a id="basket-link" class="active" href="delivery_information.html">Basket (<span id="basket-count">0</span>)</a></li>
+        <li class="right"><a href="login.html">Login</a></li>
+      </ul>
+      <img class="header" src="done.png"/>
+
+
+      <div class="order">
+        <div class="preview">
+            <h1 id="title"></h1>
+            
+            <img id="preview"/>
+
+
+        </div>
+        <div class="addressing">
+          <div>
+            <h2>Delivery Date</h2>
+            <p id="date" type="text" class="input"></p>
+          </div>
+          <br />
+          <div>
+            <h2>Item Pricing</h2>
+            <p>$<span id="price" type="text" class="input"></span></p>
+          </div>
+          <br />
+          <div>
+            <h2>Delivery Address</h2>
+            <p><span id="address1" type="text" class="input"></span></p>
+            <p><span id="address2" type="text" class="input"></span></p>
+            <p><span id="address3" type="text" class="input"></span></p>
+          </div>
+          <br />
+
+          <div class="order-table">
+            <div id="discount-popup">
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <td class="table-left">
+                    SUBTOTAL:
+                  </td>
+                  <td  class="table-right">
+                    $<span id="price2"></span>
+                  </td>
+                </tr>
+              </thead>
+
+              <tr>
+                <td class="table-left">
+                  Delivery:
+                </td>
+                <td class="table-right">
+                  $25
+                </td>
+              </tr>
+
+              <tr id="discount">
+                <td class="table-left">
+                  Discount:
+                </td>
+                <td class="table-right">
+                  $0
+                </td>
+              </tr>
+
+              <tr>
+                <td class="table-left">
+                  Tax:
+                </td>
+                <td class="table-right">
+                  $0
+                </td>
+              </tr>
+
+              <tfoot>
+                <tr>
+                  <td class="table-left">ORDER TOTAL:</td>
+                  <td  class="table-right">$<span id="total"></span></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+            <br />
+            <br />
+            <br />
+            <button onclick="add()">Continue</button>
+            <p>Taxes and delivery calculated later.</p>
+          </div>
+        </div>
+
+
+      <script src="configuration.js"></script>
+      <script>
+          var host = getHost();
+          var logged_in = localStorage.getItem('token');
+          var email = localStorage.getItem('email');
+          var price = localStorage.getItem('price');
+          var basket = localStorage.getItem('basket');
+
+          updateBasket();
+
+
+          async function updateBasket() {
+            var basket_div = document.getElementById("basket-count");
+            console.log(basket);
+            basket_div.innerHTML = 0;
+            if (basket == null) return;
+            console.log(basket);
+
+            var response = await fetch(host + "/flowers/" + basket);
+
+            if (response.status == 200) {
+                console.log(response);
+            basket_div.innerHTML = 1;
+
+            }
+          }
+
+          async function add() {
+            var fname = localStorage.getItem("first_name");
+            var lname = localStorage.getItem("last_name");
+            var relationship = localStorage.getItem("relationship");
+            var address = localStorage.getItem("address");
+            var apt = localStorage.getItem("apt");
+            var city = localStorage.getItem("city");
+            var state = localStorage.getItem("state");
+            var zip = localStorage.getItem("zip");
+            var date = localStorage.getItem("delivery");
+
+            orderData = {
+                "user_id": email,
+                "flower_id": basket,
+                "address": address,
+                "delivery_date": date,
+                "price": price,
+                "first_name": fname,
+                "last_name": lname,
+                "relationship": relationship
+            };
+
+
+            console.log(orderData);
+
+            let request = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": host
+                    },
+                    body: JSON.stringify(orderData)
+                };
+
+                console.log(request);
+            var response = await fetch(host + "/orders", request);
+
+
+            console.log(response);
+
+            if (response.status == 200) {
+              localStorage.removeItem('basket');
+              localStorage.removeItem('price');
+              window.location.assign("track_order.html");
+
+            } else {
+              alert("Something went wrong...")
+            }
+          }
+          
+  
+          onload();
+  
+          async function onload() {
+            var prev = document.getElementById("preview");
+            var title = document.getElementById("title");
+            var price_s = document.getElementById("price");
+            var price_2 = document.getElementById("price2");
+            prev.src = host + "/flowers/image/" + basket;
+            title.innerHTML = basket;
+            price_s.innerHTML = price;
+            price_2.innerHTML = price;
+            console.log(price_s);
+
+
+            var address = localStorage.getItem("address");
+
+            var del = document.getElementById("date");
+            var date = localStorage.getItem("delivery");
+            del.innerHTML = date;
+            console.log(address);
+          
+            address = address.split(';');
+            var add1 = document.getElementById("address1");
+            var add2 = document.getElementById("address2");
+            var add3 = document.getElementById("address3");
+            add1.innerHTML = address[0];
+            add2.innerHTML = address[1];
+            add3.innerHTML = address[2];
+
+            price = 25 + parseFloat(price);
+
+            if (logged_in != null) {
+              var total_pop = document.getElementById("discount-popup");
+              total_pop.innerHTML = `
+              <div>You saved $10 on this order!</div>
+              
+              `
+              
+              price -= 10;
+              var total = document.getElementById("discount");
+              total.innerHTML = `
+                <td class="table-left">
+                  Discount:
+                </td>
+                <td>
+                  - $10
+                </td>`;
+
+            }
+            var total = document.getElementById("total");
+            total.innerHTML = price;
+
+          }
+      </script>
+   
+  </body>
+</html>

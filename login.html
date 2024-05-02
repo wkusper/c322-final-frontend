@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="login.css" />
+        <link rel="stylesheet" href="navbar.css">
+        <title>Form</title>
+      </head>
+      <body>
+        <ul class="topnav">
+            <li><a  href="index.html">Home</a></li>
+            <li><a href="track_order.html">Track Order</a></li>
+            <li><a id="basket-link" href="delivery_information.html">Basket (<span id="basket-count">0</span>)</a></li>
+            <li class="right"><a class="active" href="login.html">Login</a></li>
+          </ul>
+        <div class="login-wrap">
+          <div class="login-html">
+            <input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Sign In</label>
+            <input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Sign Up</label>
+            <div class="login-form">
+              <div class="sign-in-htm">
+                <div class="group">
+                  <label for="user" class="label">Email</label>
+                  <input placeholder="name@example.com" id="user" type="text" class="input">
+                </div>
+                <div class="group">
+                  <label for="pass" class="label">Password</label>
+                  <input placeholder="Password" id="pass" type="password" class="input" data-type="password">
+                </div>
+                <div class="group">
+                  <input id="check" type="checkbox" class="check" checked>
+                  <label for="check"><span class="icon"></span> Keep me Signed in</label>
+                </div>
+                <div class="group">
+                  <input type="submit" class="button" value="Sign In" onclick="login()">
+                </div>
+              </div>
+              <div class="sign-up-htm">
+                <div class="group">
+                  <label for="new_email" class="label">Email Address</label>
+                  <input placeholder="name@example.com" id="new_email" type="text" class="input">
+                </div>
+                <div class="group">
+                  <label for="new_pass" class="label">Password</label>
+                  <input id="new_pass" placeholder="Password" type="password" class="input" data-type="password">
+                </div>
+                <div class="group">
+                  <label for="new_pass_check" class="label">Repeat Password</label>
+                  <input id="new_pass_check" placeholder="Password" type="password" class="input" data-type="password">
+                </div>
+                <div class="group">
+                  <input type="submit"  class="button" value="Sign Up" onclick="signup()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <script src="configuration.js"></script>
+        <script src="register.js"></script>
+        
+    <script>
+        var host = getHost();
+        var basket = localStorage.getItem('basket');
+        
+
+        updateBasket();
+
+
+        async function updateBasket() {
+        var basket = localStorage.getItem('basket');
+        var basket_div = document.getElementById("basket-count");
+        console.log(basket);
+        basket_div.innerHTML = 0;
+        if (basket == null) return;
+        console.log(basket);
+
+        var response = await fetch(host + "/flowers/" + basket);
+
+        if (response.status == 200) {
+            console.log(response);
+        basket_div.innerHTML = 1;
+
+        }
+        }
+    </script>
+      </body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="basket.css">
+  </head>
+
+  <body>
+    <ul class="topnav">
+        <li><a  href="index.html">Home</a></li>
+        <li><a href="track_order.html">Track Order</a></li>
+        <li><a id="basket-link" class="active" href="delivery_information.html">Basket (<span id="basket-count">0</span>)</a></li>
+        <li class="right"><a href="login.html">Login</a></li>
+      </ul>
+      <div id="progress">
+        <img class="header" src="delivery.png"/>
+
+      </div>
+
+
+      <div  id="has-order" class="order">
+        <div class="preview">
+            <h1 id="title"></h1>
+            <h1>$ <span id="price"></span></h1>
+            
+            <img id="preview"/>
+
+
+        </div>
+        <div class="addressing">
+            <h2>Recipient</h2>
+            <div>
+              <label for="first_name" class="label">First Name*</label>
+              <input id="first_name" type="text" class="input">
+              <label for="last_name" class="label">Last Name*</label>
+              <input id="last_name" type="text" class="input">
+            </div>
+              <br />
+            <div>
+              <label for="relationship" class="label">Relationship*</label>
+              <select id="relationship" name="relationship">
+                <option value="OTHER">Other</option>
+                <option value="MOTHER">Mother</option>
+                <option value="FATHER">Father</option>
+                <option value="PARENT">Parent</option>
+                <option value="GIRLFRIEND">Girlfriend</option>
+                <option value="BOYFRIEND">Boyfriend</option>
+                <option value="PARTNER">Partner</option>
+                <option value="GRANDPARENT">Grandparent</option>
+              </select>
+            </div>
+              <br />
+              <br />
+              <br />
+            <h2>Deliver To</h2>
+            <label for="address1" class="label">Address*</label>
+            <input id="address1" type="text" class="input">
+            <br />
+            <br />
+            <div>
+              <label for="apt" class="label">Apt/Suite</label>
+              <input id="apt" type="text" class="input">
+              <label for="city" class="label">City*</label>
+              <input id="city" type="text" class="input">
+            </div>
+            <br />
+            <div>
+                <label for="state" class="label">State*</label>
+                <input id="state" type="text" class="input">
+                <label for="zip" class="label">Zip Code*</label>
+                <input id="zip" type="text" class="input">
+              </div>
+              <br />
+              <br />
+              <br />
+              <button onclick="add()" id="cont">Continue</button>
+              <p>Taxes and delivery calculated later.</p>
+        </div>
+      </div>
+
+
+      <script src="configuration.js"></script>
+      <script>
+          var host = getHost();
+          var logged_in = localStorage.getItem('token');
+          var email = localStorage.getItem('email');
+          var price = localStorage.getItem('price');
+          var basket = localStorage.getItem('basket');
+
+          updateBasket();
+
+
+          async function updateBasket() {
+            var basket_div = document.getElementById("basket-count");
+            console.log(basket);
+            basket_div.innerHTML = 0;
+            if (basket == null) return;
+            console.log(basket);
+
+            var response = await fetch(host + "/flowers/" + basket);
+
+            if (response.status == 200) {
+                console.log(response);
+            basket_div.innerHTML = 1;
+
+            }
+          }
+
+          async function add() {
+            var fname = document.getElementById("first_name").value;
+            var lname = document.getElementById("last_name").value;
+            var relationship = document.getElementById("relationship").value;
+            var address = document.getElementById("address1").value;
+            var apt = document.getElementById("apt").value;
+            var city = document.getElementById("city").value;
+            var state = document.getElementById("state").value;
+            var zip = document.getElementById("zip").value;
+            var date = localStorage.getItem("delivery");
+
+            if(fname == "" || lname == "" || address == "" || city == "" || state == "" || zip == "" || relationship =="") {
+                alert("Not all required fields filled.")
+                return;
+            }
+
+            var full_address = `${fname} ${lname};${address} ${apt};${city} ${state} ${zip}`;
+
+
+            orderData = {
+                user_id: email,
+                flower_id: basket,
+                address: full_address,
+                delivery_date: date,
+                price: price,
+                first_name: fname,
+                last_name: lname,
+                relationship: relationship
+            };
+
+
+            localStorage.setItem('first_name', fname);
+            localStorage.setItem('last_name', lname);
+            localStorage.setItem('relationship', relationship);
+            localStorage.setItem('address', full_address);
+            localStorage.setItem('apt', apt);
+            localStorage.setItem('city', city);
+            localStorage.setItem('state', state);
+            localStorage.setItem('zip', zip);
+
+
+            window.location.assign("place_order.html");
+
+
+            //let request = {
+            //        method: "POST",
+            //        headers: {
+            //            "Content-Type": "application/json",
+            //        },
+            //        body: orderData
+            //    };
+
+
+            //var response = await fetch(host + "/orders/" + basket, request);
+          }
+          
+  
+          onload();
+  
+          async function onload() {
+            var prev = document.getElementById("preview");
+            var title = document.getElementById("title");
+            var price_s = document.getElementById("price");
+            prev.src = host + "/flowers/image/" + basket;
+            title.innerHTML = basket;
+            price_s.innerHTML = price;
+            console.log(price_s);
+
+
+            var fname = document.getElementById("first_name");
+            var lname = document.getElementById("last_name");
+            var relationship = document.getElementById("relationship");
+            var apt = document.getElementById("apt");
+            var city = document.getElementById("city");
+            var state = document.getElementById("state");
+            var zip = document.getElementById("zip");
+          
+            fname.value = localStorage.getItem('first_name');
+            lname.value = localStorage.getItem('last_name');
+            relationship.value = localStorage.getItem('relationship');
+            apt.value = localStorage.getItem('apt');
+            city.value = localStorage.getItem('city');
+            state.value = localStorage.getItem('state');
+            zip.value = localStorage.getItem('zip');
+
+            if (basket == null) {
+              var progress = document.getElementById("progress");
+              progress.innerHTML = "";
+              var prev = document.getElementById("has-order");
+              prev.innerHTML = "Add something to your cart first.";
+              document.getElementById("cont").disabled = true;
+              
+            }
+
+          }
+      </script>
+   
+  </body>
+</html>

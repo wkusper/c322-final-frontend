@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="basket.css">
+  </head>
+
+  <body>
+    <ul class="topnav">
+        <li><a  href="index.html" class="active">Home</a></li>
+        <li><a href="track_order.html">Track Order</a></li>
+        <li><a id="basket-link" href="delivery_information.html">Basket (<span id="basket-count">0</span>)</a></li>
+        <li class="right"><a href="login.html">Login</a></li>
+      </ul>
+
+
+      <div class="order">
+
+
+        <img id="image" />
+
+        <div class="info">
+
+            <h1 id="title"></h1>
+
+            <br />
+
+            <label>Desired Delivery Date*</label>
+            <br />
+            <input class="input" id="delivery" type="date" />
+
+
+            <br />
+            <br />
+
+            <input id="delivery" class="input" type="radio" disabled> $ <span id="discount-price"></span> Start a subscription</input>
+            <br />
+            <br />
+
+            <input checked="checked" id="delivery" class="input" type="radio" default> $<span id="full-price"></span> one time Purchase</input>
+
+            <br />
+            <br />
+            <br />
+            <button onclick="add()">Add to Basket</button>
+
+        </div>
+      </div>
+
+
+
+      <script src="configuration.js"></script>
+      <script>
+          var host = getHost();
+          var logged_in = localStorage.getItem('token');
+          var email = localStorage.getItem('email');
+
+          let flower = window.location.href.split('?')[1].split('=')[1]
+          let price = window.location.href.split('?')[2].split('=')[1]
+          console.log(flower);
+          
+          updateBasket();
+
+
+          async function updateBasket() {
+            var basket = localStorage.getItem('basket').replace("%20", " ");
+            var basket_div = document.getElementById("basket-count");
+            basket_div.innerHTML = 0;
+            if (basket == null) return;
+            console.log(basket);
+
+            var response = await fetch(host + "/flowers/" + basket);
+
+            if (response.status == 200) {
+                console.log(response);
+            basket_div.innerHTML = 1;
+
+            }
+          }
+          
+  
+          onload();
+  
+          async function onload() {
+            var email = localStorage.getItem('email');
+            var image_div = document.getElementById("image");
+            var full = document.getElementById("full-price");
+            var discount = document.getElementById("discount-price");
+            
+            var title = document.getElementById("title");
+
+            image_div.src = host + "/flowers/image/" + flower;
+            title.innerHTML = flower.replace("%20", " ");
+            full.innerHTML = price;
+            discount.innerHTML = price - (price * 0.3)
+
+          }
+
+        function add() {
+            var delivery = document.getElementById("delivery");
+            console.log(delivery.value);
+            if (delivery.value != null && delivery.value != "") {
+                localStorage.setItem("delivery", delivery.value);
+                localStorage.setItem("basket", flower.replace("%20", " "));
+                localStorage.setItem("price", price);
+                if (logged_in != null) {
+                    window.location.assign("delivery_information.html");
+                } else {
+                    window.location.assign("delivery_information_guest.html");
+
+                }
+            } else {
+              alert("Please fill all required fields.")
+            }
+        }
+      </script>
+   
+  </body>
+</html>
